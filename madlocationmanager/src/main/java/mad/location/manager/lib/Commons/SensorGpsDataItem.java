@@ -92,4 +92,35 @@ public class SensorGpsDataItem implements Comparable<SensorGpsDataItem> {
         return (int) (this.timestamp - o.timestamp);
     }
 
+    @NonNull
+    @Override
+    public String toString() {
+//        return super.toString();
+        StringBuilder stringBuilder = new StringBuilder(320);
+        stringBuilder.append("SensorGpsDataItem : { ");
+        stringBuilder.append("timestamp : ");
+        stringBuilder.append(timestamp);
+        stringBuilder.append(", gpsLat : ");
+        stringBuilder.append(gpsLat);
+        stringBuilder.append(", gpsLon : ");
+        stringBuilder.append(gpsLon);
+        stringBuilder.append(", gpsAlt : ");
+        stringBuilder.append(gpsAlt);
+        stringBuilder.append(", absNorthAcc : ");
+        stringBuilder.append(absNorthAcc);
+        stringBuilder.append(", absEastAcc : ");
+        stringBuilder.append(absEastAcc);
+        stringBuilder.append(", absUpAcc : ");
+        stringBuilder.append(absUpAcc);
+        stringBuilder.append(", speed : ");
+        stringBuilder.append(speed);
+        stringBuilder.append(", course : ");
+        stringBuilder.append(course);
+        stringBuilder.append(", posErr : ");
+        stringBuilder.append(posErr);
+        stringBuilder.append(", velErr : ");
+        stringBuilder.append(velErr);
+        stringBuilder.append(" }");
+        return stringBuilder.toString();
+    }
 }

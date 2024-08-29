@@ -338,6 +338,7 @@ public class KalmanLocationService extends Service
                         handlePredict(sdi);
                     } else {
                         handleUpdate(sdi);
+                        Log.d(TAG, sdi.toString());
                         Location loc = locationAfterUpdateStep(sdi);
                         publishProgress(loc);
                     }

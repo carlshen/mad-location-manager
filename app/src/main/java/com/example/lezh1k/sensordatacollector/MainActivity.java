@@ -175,6 +175,20 @@ public class MainActivity extends AppCompatActivity implements LocationServiceIn
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 100) {
+            SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+            if (sensorManager == null || locationManager == null) {
+                System.exit(1);
+            }
+
+            m_sensorCalibrator = new SensorCalibrator(sensorManager);
+            ServicesHelper.getLocationService(this, value -> {
+                set_isLogging(value.IsRunning());
+            });
+            set_isCalibrating(false, true);
+        }
     }
 
     private void set_isLogging(boolean isLogging) {
@@ -307,20 +321,21 @@ public class MainActivity extends AppCompatActivity implements LocationServiceIn
         if (!lstPermissions.isEmpty()) {
             ActivityCompat.requestPermissions(this, lstPermissions.toArray(new String[0]),
                     100);
+        } else {
+
+            SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+            if (sensorManager == null || locationManager == null) {
+                System.exit(1);
+            }
+
+            m_sensorCalibrator = new SensorCalibrator(sensorManager);
+            ServicesHelper.getLocationService(this, value -> {
+                set_isLogging(value.IsRunning());
+            });
+            set_isCalibrating(false, true);
         }
-
-        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-        if (sensorManager == null || locationManager == null) {
-            System.exit(1);
-        }
-
-        m_sensorCalibrator = new SensorCalibrator(sensorManager);
-        ServicesHelper.getLocationService(this, value -> {
-            set_isLogging(value.IsRunning());
-        });
-        set_isCalibrating(false, true);
     }
 
     //uncaught exceptions
@@ -410,37 +425,38 @@ public class MainActivity extends AppCompatActivity implements LocationServiceIn
 
     public void setupMap(@Nullable Bundle savedInstanceState) {
         m_mapView = (MapView) findViewById(R.id.mapView);
-        m_mapView.onCreate(savedInstanceState);
+//        m_mapView.onCreate(savedInstanceState);
 
         m_presenter = new MapPresenter(this, this, m_geoHashRTFilter);
-        m_mapView.getMapAsync(mapboxMap -> {
-            m_map = mapboxMap;
-            MainActivity this_ = this;
-            ProgressDialog progress = new ProgressDialog(this);
-            progress.setTitle("Loading");
-            progress.setMessage("Wait while map loading...");
-            progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
-            progress.show();
-
-            m_map.setStyleUrl(BuildConfig.lightMapStyle);
-            m_map.setStyleUrl(Style.SATELLITE_STREETS, new MapboxMap.OnStyleLoadedListener() {
-                @Override
-                public void onStyleLoaded(String style) {
-                    m_map.getUiSettings().setLogoEnabled(false);
-                    m_map.getUiSettings().setAttributionEnabled(false);
-                    m_map.getUiSettings().setTiltGesturesEnabled(false);
-
-                    int leftMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
-                    int topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 56, getResources().getDisplayMetrics());
-                    int rightMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
-                    int bottomMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
-                    m_map.getUiSettings().setCompassMargins(leftMargin, topMargin, rightMargin, bottomMargin);
-                    ServicesHelper.addLocationServiceInterface(this_);
-                    m_presenter.getRoute();
-                    progress.dismiss();
-                }
-            });
-        });
+        // just comment as for pass build debug
+//        m_mapView.getMapAsync(mapboxMap -> {
+//            m_map = mapboxMap;
+//            MainActivity this_ = this;
+//            ProgressDialog progress = new ProgressDialog(this);
+//            progress.setTitle("Loading");
+//            progress.setMessage("Wait while map loading...");
+//            progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
+//            progress.show();
+//
+//            m_map.setStyleUrl(BuildConfig.lightMapStyle);
+//            m_map.setStyleUrl(Style.SATELLITE_STREETS, new MapboxMap.OnStyleLoadedListener() {
+//                @Override
+//                public void onStyleLoaded(String style) {
+//                    m_map.getUiSettings().setLogoEnabled(false);
+//                    m_map.getUiSettings().setAttributionEnabled(false);
+//                    m_map.getUiSettings().setTiltGesturesEnabled(false);
+//
+//                    int leftMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
+//                    int topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 56, getResources().getDisplayMetrics());
+//                    int rightMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
+//                    int bottomMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
+//                    m_map.getUiSettings().setCompassMargins(leftMargin, topMargin, rightMargin, bottomMargin);
+//                    ServicesHelper.addLocationServiceInterface(this_);
+//                    m_presenter.getRoute();
+//                    progress.dismiss();
+//                }
+//            });
+//        });
     }
 
     @Override
@@ -468,7 +484,9 @@ public class MainActivity extends AppCompatActivity implements LocationServiceIn
         File esd = Environment.getExternalStorageDirectory();
         String storageState = Environment.getExternalStorageState();
         if (storageState != null && storageState.equals(Environment.MEDIA_MOUNTED)) {
-            xLogFolderPath = String.format("%s/%s/", esd.getAbsolutePath(), "SensorDataCollector");
+//            xLogFolderPath = String.format("%s/%s/", esd.getAbsolutePath(), "SensorDataCollector");
+            xLogFolderPath = String.format("%s/%s/", getExternalFilesDir(null).getAbsolutePath(), "SensorDataCollector");
+            Log.d(KalmanLocationService.TAG, "xLogFolderPath = " + xLogFolderPath);
             Printer androidPrinter = new AndroidPrinter();             // Printer that print the log using android.util.Log
             initXlogPrintersFileName();
             Printer xLogFilePrinter = new FilePrinter
