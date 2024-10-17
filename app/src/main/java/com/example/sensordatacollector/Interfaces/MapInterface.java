@@ -1,4 +1,4 @@
-package com.example.lezh1k.sensordatacollector.Interfaces;
+package com.example.sensordatacollector.Interfaces;
 
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.geometry.LatLng;

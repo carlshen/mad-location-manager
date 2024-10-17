@@ -1,7 +1,9 @@
-package com.example.lezh1k.sensordatacollector;
+package com.example.sensordatacollector;
 
 import android.os.Bundle;
 import androidx.preference.PreferenceFragmentCompat;
+
+import com.example.sensordatacollector.R;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
     @Override

@@ -1,4 +1,4 @@
-package com.example.lezh1k.sensordatacollector.Presenters;
+package com.example.sensordatacollector.Presenters;
 
 import android.Manifest;
 import android.content.Context;
@@ -12,8 +12,8 @@ import androidx.core.app.ActivityCompat;
 import mad.location.manager.lib.Commons.Utils;
 import mad.location.manager.lib.Loggers.GeohashRTFilter;
 
-import com.example.lezh1k.sensordatacollector.Interfaces.MapInterface;
-import com.example.lezh1k.sensordatacollector.MainActivity;
+import com.example.sensordatacollector.Interfaces.MapInterface;
+import com.example.sensordatacollector.MainActivity;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 

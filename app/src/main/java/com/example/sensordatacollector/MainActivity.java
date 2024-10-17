@@ -1,7 +1,6 @@
-package com.example.lezh1k.sensordatacollector;
+package com.example.sensordatacollector;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,7 +18,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -27,6 +25,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.elvishew.xlog.LogLevel;
@@ -45,26 +44,26 @@ import mad.location.manager.lib.Services.KalmanLocationService;
 import mad.location.manager.lib.Services.ServicesHelper;
 import mad.location.manager.lib.Services.Settings;
 
-import com.example.lezh1k.sensordatacollector.Interfaces.MapInterface;
-import com.example.lezh1k.sensordatacollector.Presenters.MapPresenter;
-import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.annotations.Polyline;
-import com.mapbox.mapboxsdk.annotations.PolylineOptions;
-import com.mapbox.mapboxsdk.camera.CameraPosition;
-import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
-import com.mapbox.mapboxsdk.constants.Style;
-import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.maps.MapView;
-import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.tencent.map.geolocation.TencentLocation;
+import com.tencent.map.geolocation.TencentLocationListener;
+import com.tencent.map.geolocation.TencentLocationManager;
+import com.tencent.map.geolocation.TencentLocationRequest;
+import com.tencent.tencentmap.mapsdk.maps.CameraUpdate;
+import com.tencent.tencentmap.mapsdk.maps.CameraUpdateFactory;
+import com.tencent.tencentmap.mapsdk.maps.MapView;
+import com.tencent.tencentmap.mapsdk.maps.TencentMap;
+import com.tencent.tencentmap.mapsdk.maps.model.BitmapDescriptor;
+import com.tencent.tencentmap.mapsdk.maps.model.BitmapDescriptorFactory;
+import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
+import com.tencent.tencentmap.mapsdk.maps.model.MarkerOptions;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-public class MainActivity extends AppCompatActivity implements LocationServiceInterface, MapInterface, ILogger {
+public class MainActivity extends AppCompatActivity implements LocationServiceInterface, TencentLocationListener, ILogger {
 
     private SharedPreferences mSharedPref;
 
@@ -162,9 +161,14 @@ public class MainActivity extends AppCompatActivity implements LocationServiceIn
     }
     /*********************************************************/
 
-    private MapPresenter m_presenter;
-    private MapboxMap m_map;
-    private MapView m_mapView;
+    private final static String TAG = "MainActivity";
+    private TencentLocationManager mLocationManager; // 声明一个腾讯定位管理器对象
+    private MapView m_mapView; // 声明一个地图视图对象
+    private TencentMap mTencentMap; // 声明一个腾讯地图对象
+    private boolean isFirstLoc = true; // 是否首次定位
+//    private MapPresenter m_presenter;
+//    private MapboxMap m_map;
+//    private MapView m_mapView;
 
     private GeohashRTFilter m_geoHashRTFilter;
     private SensorCalibrator m_sensorCalibrator = null;
@@ -202,8 +206,8 @@ public class MainActivity extends AppCompatActivity implements LocationServiceIn
 
         if (isLogging) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            m_presenter.stop();
-            m_presenter.start();
+//            m_presenter.stop();
+//            m_presenter.start();
             m_geoHashRTFilter.stop();
             m_geoHashRTFilter.reset(this);
             Settings.LocationProvider provider = Settings.LocationProvider.GPS;
@@ -249,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements LocationServiceIn
         } else {
             btnStartStopText = "Start tracking";
             btnTvStatusText = "Paused";
-            m_presenter.stop();
+//            m_presenter.stop();
             ServicesHelper.getLocationService(this, value -> {
                 value.stop();
             });
@@ -356,14 +360,14 @@ public class MainActivity extends AppCompatActivity implements LocationServiceIn
 
     @Override
     public void locationChanged(Location location) {
-        if (m_map != null && m_presenter != null) {
-            if (!m_map.isMyLocationEnabled()) {
-                m_map.setMyLocationEnabled(true);
-                m_map.getMyLocationViewSettings().setForegroundTintColor(ContextCompat.getColor(this, R.color.red));
-            }
-
-            m_presenter.locationChanged(location, m_map.getCameraPosition());
-        }
+//        if (m_map != null && m_presenter != null) {
+//            if (!m_map.isMyLocationEnabled()) {
+//                m_map.setMyLocationEnabled(true);
+//                m_map.getMyLocationViewSettings().setForegroundTintColor(ContextCompat.getColor(this, R.color.red));
+//            }
+//
+//            m_presenter.locationChanged(location, m_map.getCameraPosition());
+//        }
     }
 
     public static final int FILTER_KALMAN_ONLY = 0;
@@ -371,63 +375,63 @@ public class MainActivity extends AppCompatActivity implements LocationServiceIn
     public static final int GPS_ONLY = 2;
     private int routeColors[] = {R.color.mapbox_blue, R.color.colorAccent, R.color.green};
     private int routeWidths[] = {1, 3, 1};
-    private Polyline lines[] = new Polyline[3];
+//    private Polyline lines[] = new Polyline[3];
 
-    @Override
-    public void showRoute(List<LatLng> route, int interestedRoute) {
+//    @Override
+//    public void showRoute(List<LatLng> route, int interestedRoute) {
+//
+//        CheckBox cbGps, cbFilteredKalman, cbFilteredKalmanGeo;
+//        cbGps = (CheckBox) findViewById(R.id.cbGPS);
+//        cbFilteredKalman = (CheckBox) findViewById(R.id.cbFilteredKalman);
+//        cbFilteredKalmanGeo = (CheckBox) findViewById(R.id.cbFilteredKalmanGeo);
+//        boolean enabled[] = {cbFilteredKalman.isChecked(), cbFilteredKalmanGeo.isChecked(), cbGps.isChecked()};
+//        if (m_map != null) {
+//            runOnUiThread(() ->
+//                    m_mapView.post(() -> {
+//                        if (lines[interestedRoute] != null)
+//                            m_map.removeAnnotation(lines[interestedRoute]);
+//
+//                        if (!enabled[interestedRoute])
+//                            route.clear(); //too many hacks here
+//
+//                        lines[interestedRoute] = m_map.addPolyline(new PolylineOptions()
+//                                .addAll(route)
+//                                .color(ContextCompat.getColor(this, routeColors[interestedRoute]))
+//                                .width(routeWidths[interestedRoute]));
+//                    }));
+//        }
+//    }
 
-        CheckBox cbGps, cbFilteredKalman, cbFilteredKalmanGeo;
-        cbGps = (CheckBox) findViewById(R.id.cbGPS);
-        cbFilteredKalman = (CheckBox) findViewById(R.id.cbFilteredKalman);
-        cbFilteredKalmanGeo = (CheckBox) findViewById(R.id.cbFilteredKalmanGeo);
-        boolean enabled[] = {cbFilteredKalman.isChecked(), cbFilteredKalmanGeo.isChecked(), cbGps.isChecked()};
-        if (m_map != null) {
-            runOnUiThread(() ->
-                    m_mapView.post(() -> {
-                        if (lines[interestedRoute] != null)
-                            m_map.removeAnnotation(lines[interestedRoute]);
+//    @Override
+//    public void moveCamera(CameraPosition position) {
+//        runOnUiThread(() ->
+//                m_mapView.postDelayed(() -> {
+//                    if (m_map != null) {
+//                        m_map.animateCamera(CameraUpdateFactory.newCameraPosition(position));
+//                    }
+//                }, 100));
+//    }
 
-                        if (!enabled[interestedRoute])
-                            route.clear(); //too many hacks here
-
-                        lines[interestedRoute] = m_map.addPolyline(new PolylineOptions()
-                                .addAll(route)
-                                .color(ContextCompat.getColor(this, routeColors[interestedRoute]))
-                                .width(routeWidths[interestedRoute]));
-                    }));
-        }
-    }
-
-    @Override
-    public void moveCamera(CameraPosition position) {
-        runOnUiThread(() ->
-                m_mapView.postDelayed(() -> {
-                    if (m_map != null) {
-                        m_map.animateCamera(CameraUpdateFactory.newCameraPosition(position));
-                    }
-                }, 100));
-    }
-
-    @Override
-    public void setAllGesturesEnabled(boolean enabled) {
-        if (enabled) {
-            m_mapView.postDelayed(() -> {
-                m_map.getUiSettings().setScrollGesturesEnabled(true);
-                m_map.getUiSettings().setZoomGesturesEnabled(true);
-                m_map.getUiSettings().setDoubleTapGesturesEnabled(true);
-            }, 500);
-        } else {
-            m_map.getUiSettings().setScrollGesturesEnabled(false);
-            m_map.getUiSettings().setZoomGesturesEnabled(false);
-            m_map.getUiSettings().setDoubleTapGesturesEnabled(false);
-        }
-    }
+//    @Override
+//    public void setAllGesturesEnabled(boolean enabled) {
+//        if (enabled) {
+//            m_mapView.postDelayed(() -> {
+//                m_map.getUiSettings().setScrollGesturesEnabled(true);
+//                m_map.getUiSettings().setZoomGesturesEnabled(true);
+//                m_map.getUiSettings().setDoubleTapGesturesEnabled(true);
+//            }, 500);
+//        } else {
+//            m_map.getUiSettings().setScrollGesturesEnabled(false);
+//            m_map.getUiSettings().setZoomGesturesEnabled(false);
+//            m_map.getUiSettings().setDoubleTapGesturesEnabled(false);
+//        }
+//    }
 
     public void setupMap(@Nullable Bundle savedInstanceState) {
         m_mapView = (MapView) findViewById(R.id.mapView);
 //        m_mapView.onCreate(savedInstanceState);
 
-        m_presenter = new MapPresenter(this, this, m_geoHashRTFilter);
+//        m_presenter = new MapPresenter(this, this, m_geoHashRTFilter);
         // just comment as for pass build debug
 //        m_mapView.getMapAsync(mapboxMap -> {
 //            m_map = mapboxMap;
@@ -459,16 +463,46 @@ public class MainActivity extends AppCompatActivity implements LocationServiceIn
 //        });
     }
 
+    // 初始化视图
+    private void initView() {
+        RadioGroup rg_type = findViewById(R.id.rg_type);
+        rg_type.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.rb_common) {
+                mTencentMap.setMapType(TencentMap.MAP_TYPE_NORMAL); // 设置普通地图
+            } else if (checkedId == R.id.rb_satellite) {
+                mTencentMap.setMapType(TencentMap.MAP_TYPE_SATELLITE); // 设置卫星地图
+            }
+        });
+        CheckBox ck_traffic = findViewById(R.id.ck_traffic);
+        ck_traffic.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            mTencentMap.setTrafficEnabled(isChecked); // 是否显示交通拥堵状况
+        });
+    }
+
+    // 初始化定位服务
+    private void initLocation() {
+        m_mapView = findViewById(R.id.mapView);
+        mTencentMap = m_mapView.getMap(); // 获取腾讯地图对象
+        mLocationManager = TencentLocationManager.getInstance(this);
+        // 创建腾讯定位请求对象
+        TencentLocationRequest request = TencentLocationRequest.create();
+        request.setInterval(30000).setAllowGPS(true);
+        request.setRequestLevel(TencentLocationRequest.REQUEST_LEVEL_ADMIN_AREA);
+        mLocationManager.requestLocationUpdates(request, this); // 开始定位监听
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         defaultUEH = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(_unCaughtExceptionHandler);
-        Mapbox.getInstance(this, BuildConfig.access_token);
+//        Mapbox.getInstance(this, BuildConfig.access_token);
         setContentView(R.layout.activity_main);
         m_geoHashRTFilter = new GeohashRTFilter(Utils.GEOHASH_DEFAULT_PREC, Utils.GEOHASH_DEFAULT_MIN_POINT_COUNT);
-        setupMap(savedInstanceState);
+//        setupMap(savedInstanceState);
+        initLocation(); // 初始化定位服务
+        initView(); // 初始化视图
 
         CheckBox cbGps, cbFilteredKalman, cbFilteredKalmanGeo;
         cbGps = (CheckBox) findViewById(R.id.cbGPS);
@@ -516,6 +550,30 @@ public class MainActivity extends AppCompatActivity implements LocationServiceIn
             }
         });
     }
+
+    @Override
+    public void onLocationChanged(TencentLocation location, int resultCode, String resultDesc) {
+        if (resultCode == TencentLocation.ERROR_OK) { // 定位成功
+            if (location != null && isFirstLoc) { // 首次定位
+                isFirstLoc = false;
+                // 创建一个经纬度对象
+                LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+                CameraUpdate update = CameraUpdateFactory.newLatLngZoom(latLng, 12);
+                mTencentMap.moveCamera(update); // 把相机视角移动到指定地点
+                // 从指定图片中获取位图描述
+                BitmapDescriptor bitmapDesc = BitmapDescriptorFactory
+                        .fromResource(R.drawable.icon_locate);
+                MarkerOptions ooMarker = new MarkerOptions(latLng).draggable(false) // 不可拖动
+                        .visible(true).icon(bitmapDesc).snippet("这是您的当前位置");
+                mTencentMap.addMarker(ooMarker); // 往地图添加标记
+            }
+        } else { // 定位失败
+            Log.d(TAG, "定位失败，错误代码为"+resultCode+"，错误描述为"+resultDesc);
+        }
+    }
+
+    @Override
+    public void onStatusUpdate(String s, int i, String s1) {}
 
     @Override
     protected void onStart() {
@@ -567,22 +625,23 @@ public class MainActivity extends AppCompatActivity implements LocationServiceIn
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (m_mapView != null) {
-            m_mapView.onSaveInstanceState(outState);
-        }
+//        if (mMapView != null) {
+//            mMapView.onSaveInstanceState(outState);
+//        }
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        if (m_mapView != null) {
-            m_mapView.onLowMemory();
-        }
+//        if (mMapView != null) {
+//            mMapView.onLowMemory();
+//        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mLocationManager.removeUpdates(this); // 移除定位监听
         if (m_mapView != null) {
             m_mapView.onDestroy();
         }

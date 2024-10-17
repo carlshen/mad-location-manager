@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 33
+    compileSdk 34
     defaultConfig {
-        applicationId "com.example.lezh1k.sensordatacollector"
-        minSdkVersion 23
-        targetSdkVersion 33
+        applicationId "com.example.sensordatacollector"
+        minSdkVersion 24
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -23,7 +23,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
         sourceCompatibility JavaVersion.VERSION_1_8
     }
-    namespace 'com.example.lezh1k.sensordatacollector'
+    namespace 'com.example.sensordatacollector'
 }
 
 dependencies {
@@ -32,6 +32,12 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    // 腾讯定位
+    implementation 'com.tencent.map.geolocation:TencentLocationSdk-openplatform:7.2.8'
+    // 腾讯地图
+    implementation 'com.tencent.map:tencent-map-vector-sdk:4.3.9.9'
+    // 地图组件库
+    implementation 'com.tencent.map:sdk-utilities:1.0.6'
 
     api group: 'net.sf.marineapi', name: 'marineapi', version: '0.10.0'
     api 'com.google.android.gms:play-services-location:21.0.1'

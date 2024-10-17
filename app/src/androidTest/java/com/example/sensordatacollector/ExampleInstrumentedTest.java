@@ -1,4 +1,4 @@
-package com.example.lezh1k.sensordatacollector;
+package com.example.sensordatacollector;
 
 import android.content.Context;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -19,7 +19,7 @@ public class ExampleInstrumentedTest {
     @Test
     public void useAppContext() throws Exception {
         // Context of the app under test.
-        Context appContext = InstrumentationRegistry.getTargetContext();
+        Context appContext = InstrumentationRegistry.getInstrumentation().getContext();
 
         assertEquals("com.example.lezh1k.sensordatacollector", appContext.getPackageName());
     }

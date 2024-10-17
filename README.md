@@ -1,5 +1,7 @@
 [<img src="doc/MadLocationManagerlogo.svg">](https://gps.maddevs.io/)
 
+Replace Mapbox with Tencent map.
+
 This is library for GPS and Accelerometer data "fusion" with Kalman filter. All code is written in Java. It helps to increase position accuracy and GPS distance calculation on Android devices for the driver's and couriers' apps. And also, it may be used for precise tracking in on-demand services.
 
 Project consists of 2 parts: <br>

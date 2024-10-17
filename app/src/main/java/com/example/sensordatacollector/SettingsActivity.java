@@ -1,4 +1,4 @@
-package com.example.lezh1k.sensordatacollector;
+package com.example.sensordatacollector;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;

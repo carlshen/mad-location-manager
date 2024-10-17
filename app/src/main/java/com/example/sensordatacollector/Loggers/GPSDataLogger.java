@@ -1,4 +1,4 @@
-package com.example.lezh1k.sensordatacollector.Loggers;
+package com.example.sensordatacollector.Loggers;
 
 import android.Manifest;
 import android.content.Context;
